@@ -1,0 +1,218 @@
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local Players = game:GetService("Players")
+local lp = Players.LocalPlayer
+
+-- GUI Root
+local ExodusGui = Instance.new("ScreenGui")
+ExodusGui.Name = "ExodusRedesign"
+ExodusGui.ResetOnSpawn = false
+ExodusGui.Parent = game:GetService("CoreGui")
+
+-- Main Window Container
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.new(0, 620, 0, 420)
+MainFrame.Position = UDim2.new(0.5, -310, 0.5, -210)
+MainFrame.BackgroundColor3 = Color3.fromRGB(15, 8, 10)
+MainFrame.BackgroundTransparency = 0.15
+MainFrame.ClipsDescendants = true
+MainFrame.Parent = ExodusGui
+
+local MainCorner = Instance.new("UICorner")
+MainCorner.CornerRadius = UDim.new(0, 16)
+MainCorner.Parent = MainFrame
+
+local MainStroke = Instance.new("UIStroke")
+MainStroke.Color = Color3.fromRGB(220, 30, 50)
+MainStroke.Thickness = 2
+MainStroke.Transparency = 0.2
+MainStroke.Parent = MainFrame
+
+-- Background Image Overlay
+local BgImage = Instance.new("ImageLabel")
+BgImage.Name = "BackgroundImage"
+BgImage.Size = UDim2.new(1, 0, 1, 0)
+BgImage.BackgroundTransparency = 1
+BgImage.Image = "rbxassetid://10795431606" -- Replace with your uploaded background asset ID
+BgImage.ImageTransparency = 0.75
+BgImage.ScaleType = Enum.ScaleType.Crop
+BgImage.Parent = MainFrame
+
+-- Top Bar Header
+local TopBar = Instance.new("Frame")
+TopBar.Size = UDim2.new(1, 0, 0, 50)
+TopBar.BackgroundTransparency = 1
+TopBar.Parent = MainFrame
+
+local TitleLabel = Instance.new("TextLabel")
+TitleLabel.Size = UDim2.new(0, 300, 0, 25)
+TitleLabel.Position = UDim2.new(0, 20, 0, 10)
+TitleLabel.BackgroundTransparency = 1
+TitleLabel.Text = "Exodus - Murder Mystery 2"
+TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+TitleLabel.Font = Enum.Font.GothamBold
+TitleLabel.TextSize = 15
+TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+TitleLabel.Parent = TopBar
+
+local SubTitleLabel = Instance.new("TextLabel")
+SubTitleLabel.Size = UDim2.new(0, 300, 0, 15)
+SubTitleLabel.Position = UDim2.new(0, 20, 0, 30)
+SubTitleLabel.BackgroundTransparency = 1
+SubTitleLabel.Text = "discord.gg/v8ZPq4y2nD"
+SubTitleLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+SubTitleLabel.Font = Enum.Font.Gotham
+SubTitleLabel.TextSize = 11
+SubTitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+SubTitleLabel.Parent = TopBar
+
+-- Sidebar Navigation
+local Sidebar = Instance.new("Frame")
+Sidebar.Size = UDim2.new(0, 160, 1, -50)
+Sidebar.Position = UDim2.new(0, 0, 0, 50)
+Sidebar.BackgroundTransparency = 1
+Sidebar.Parent = MainFrame
+
+local SidebarList = Instance.new("UIListLayout")
+SidebarList.Padding = UDim.new(0, 6)
+SidebarList.HorizontalAlignment = Enum.HorizontalAlignment.Center
+SidebarList.Parent = Sidebar
+
+-- Content Container
+local ContentFrame = Instance.new("Frame")
+ContentFrame.Size = UDim2.new(1, -170, 1, -60)
+ContentFrame.Position = UDim2.new(0, 165, 0, 55)
+ContentFrame.BackgroundTransparency = 1
+ContentFrame.Parent = MainFrame
+
+local ContentScroll = Instance.new("ScrollingFrame")
+ContentScroll.Size = UDim2.new(1, 0, 1, 0)
+ContentScroll.BackgroundTransparency = 1
+ContentScroll.ScrollBarThickness = 4
+ContentScroll.ScrollBarImageColor3 = Color3.fromRGB(220, 30, 50)
+ContentScroll.Parent = ContentFrame
+
+local ContentList = Instance.new("UIListLayout")
+ContentList.Padding = UDim.new(0, 10)
+ContentList.SortOrder = Enum.SortOrder.LayoutOrder
+ContentList.Parent = ContentScroll
+
+-- Component Builders
+local function CreateTabButton(name)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0.88, 0, 0, 38)
+    btn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    btn.BackgroundTransparency = 0.95
+    btn.Text = "   " .. name
+    btn.TextColor3 = Color3.fromRGB(200, 200, 200)
+    btn.Font = Enum.Font.GothamMedium
+    btn.TextSize = 13
+    btn.TextXAlignment = Enum.TextXAlignment.Left
+    btn.Parent = Sidebar
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 8)
+    corner.Parent = btn
+
+    btn.MouseEnter:Connect(function()
+        TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundTransparency = 0.85}):Play()
+    end)
+    btn.MouseLeave:Connect(function()
+        TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundTransparency = 0.95}):Play()
+    end)
+
+    return btn
+end
+
+local function CreateToggleRow(parent, labelText, defaultValue, callback)
+    local row = Instance.new("Frame")
+    row.Size = UDim2.new(0.96, 0, 0, 45)
+    row.BackgroundColor3 = Color3.fromRGB(25, 12, 16)
+    row.BackgroundTransparency = 0.3
+    row.Parent = parent
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 10)
+    corner.Parent = row
+
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(0.7, 0, 1, 0)
+    label.Position = UDim2.new(0, 15, 0, 0)
+    label.BackgroundTransparency = 1
+    label.Text = labelText
+    label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    label.Font = Enum.Font.GothamMedium
+    label.TextSize = 13
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.Parent = row
+
+    local toggleTrack = Instance.new("TextButton")
+    toggleTrack.Size = UDim2.new(0, 44, 0, 22)
+    toggleTrack.Position = UDim2.new(1, -55, 0.5, -11)
+    toggleTrack.BackgroundColor3 = defaultValue and Color3.fromRGB(220, 30, 50) or Color3.fromRGB(50, 40, 45)
+    toggleTrack.Text = ""
+    toggleTrack.Parent = row
+
+    local trackCorner = Instance.new("UICorner")
+    trackCorner.CornerRadius = UDim.new(1, 0)
+    trackCorner.Parent = toggleTrack
+
+    local toggleKnob = Instance.new("Frame")
+    toggleKnob.Size = UDim2.new(0, 16, 0, 16)
+    toggleKnob.Position = defaultValue and UDim2.new(1, -19, 0.5, -8) or UDim2.new(0, 3, 0.5, -8)
+    toggleKnob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    toggleKnob.Parent = toggleTrack
+
+    local knobCorner = Instance.new("UICorner")
+    knobCorner.CornerRadius = UDim.new(1, 0)
+    knobCorner.Parent = toggleKnob
+
+    local state = defaultValue
+    toggleTrack.MouseButton1Click:Connect(function()
+        state = not state
+        local targetPos = state and UDim2.new(1, -19, 0.5, -8) or UDim2.new(0, 3, 0.5, -8)
+        local targetColor = state and Color3.fromRGB(220, 30, 50) or Color3.fromRGB(50, 40, 45)
+
+        TweenService:Create(toggleKnob, TweenInfo.new(0.2), {Position = targetPos}):Play()
+        TweenService:Create(toggleTrack, TweenInfo.new(0.2), {BackgroundColor3 = targetColor}):Play()
+
+        if callback then callback(state) end
+    end)
+
+    return row
+end
+
+-- Example Tab & Controls Assembly
+CreateTabButton("Main")
+CreateTabButton("ESP")
+CreateTabButton("Local Player")
+CreateTabButton("Aim")
+
+-- Populate Sample Controls matching your screenshot layout
+CreateToggleRow(ContentScroll, "Noclip", false, function(val) _G.Noclip = val end)
+CreateToggleRow(ContentScroll, "Fly", false, function(val) _G.Fly = val end)
+CreateToggleRow(ContentScroll, "Infinite Jump", false, function(val) _G.InfJump = val end)
+
+-- Make Window Draggable
+local dragging, dragStart, startPos
+TopBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = MainFrame.Position
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - dragStart
+        MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = false
+    end
+end)

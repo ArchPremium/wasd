@@ -61,7 +61,6 @@ _G.BindBomb = Enum.KeyCode.B
 -- INTEGRATED STANDALONE INVISIBILITY SCRIPT
 --------------------------------------------------------------------------------
 local InvisibilityActive = false
-local InvisConnection = nil
 
 local StandaloneInvisGui = Instance.new("ScreenGui")
 StandaloneInvisGui.Name = "StandaloneInvisGui"
@@ -100,55 +99,14 @@ StandaloneInvisStroke.Transparency = 0.85
 StandaloneInvisStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 StandaloneInvisStroke.Parent = StandaloneInvisBtn
 
-local function SetCharacterTransparency(character, transparency)
-    for _, part in ipairs(character:GetDescendants()) do
-        if part:IsA("BasePart") or part:IsA("Decal") then
-            if part.Name ~= "HumanoidRootPart" then
-                part.Transparency = transparency
-            end
-        end
-    end
-end
-
-local function EnableInvisibility()
-    local character = lp.Character
+-- Local Invisibility Modifier Function
+local function SetCharacterInvisibility(character, state)
     if not character then return end
-    
-    local root = character:FindFirstChild("HumanoidRootPart")
-    local humanoid = character:FindFirstChildOfClass("Humanoid")
-    if not root or not humanoid then return end
-
-    SetCharacterTransparency(character, 0.5)
-
-    InvisConnection = RunService.Heartbeat:Connect(function()
-        if InvisibilityActive and root and humanoid then
-            local originalCFrame = root.CFrame
-            local originalOffset = humanoid.CameraOffset
-
-            local downCFrame = originalCFrame * CFrame.new(0, -200000, 0)
-            root.CFrame = downCFrame
-            humanoid.CameraOffset = (downCFrame:ToObjectSpace(originalCFrame)).Position
-
-            RunService.RenderStepped:Wait()
-
-            root.CFrame = originalCFrame
-            humanoid.CameraOffset = originalOffset
-        end
-    end)
-end
-
-local function DisableInvisibility()
-    if InvisConnection then
-        InvisConnection:Disconnect()
-        InvisConnection = nil
-    end
-
-    local character = lp.Character
-    if character then
-        SetCharacterTransparency(character, 0)
-        local humanoid = character:FindFirstChildOfClass("Humanoid")
-        if humanoid then
-            humanoid.CameraOffset = Vector3.new(0, 0, 0)
+    for _, part in ipairs(character:GetDescendants()) do
+        if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
+            part.LocalTransparencyModifier = state and 1 or 0
+        elseif part:IsA("Decal") then
+            part.Transparency = state and 1 or 0
         end
     end
 end
@@ -159,11 +117,20 @@ StandaloneInvisBtn.MouseButton1Click:Connect(function()
     if InvisibilityActive then
         TweenService:Create(StandaloneInvisBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(45, 195, 115)}):Play()
         StandaloneInvisBtn.Text = "INVIS: ON"
-        EnableInvisibility()
+        SetCharacterInvisibility(lp.Character, true)
     else
         TweenService:Create(StandaloneInvisBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(220, 50, 65)}):Play()
         StandaloneInvisBtn.Text = "INVIS: OFF"
-        DisableInvisibility()
+        SetCharacterInvisibility(lp.Character, false)
+    end
+end)
+
+-- Re-apply state on respawn
+lp.CharacterAdded:Connect(function(char)
+    char:WaitForChild("Humanoid")
+    task.wait(0.1)
+    if InvisibilityActive then
+        SetCharacterInvisibility(char, true)
     end
 end)
 --------------------------------------------------------------------------------
